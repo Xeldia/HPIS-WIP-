@@ -16,37 +16,33 @@ A **web-based platform** designed to help local clinics and barangay health cent
 
 ## ⚙️ Setup & Run Instructions
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/<your-username>/healthcare-patient-information-system.git
-   cd healthcare-patient-information-system
-   ```
+### 📚 Documentation Quick Links
+- **[COMMANDS.md](COMMANDS.md)** - Copy-paste terminal commands
+- **[QUICKSTART.md](QUICKSTART.md)** - Fast setup reference
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Comprehensive step-by-step guide
 
-2. **Create a virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate   # On Windows: venv\Scripts\activate
-   ```
+### 🚀 Quick Start Scripts
+- **Windows CMD**: Double-click `run_server.bat`
+- **PowerShell**: Run `.\run_server.ps1`
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### TL;DR - First Time Setup (Windows PowerShell)
+```powershell
+# Clone and navigate
+git clone https://github.com/Xeldia/HPIS-WIP-.git
+cd HPIS-WIP-
 
-4. **Run migrations**
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
+# Setup environment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 
-5. **Start the server**
-   ```bash
-   python manage.py runserver
-   ```
+# Install and run
+pip install -r hpis\requirements.txt
+cd hpis
+python manage.py migrate
+python manage.py runserver
+```
 
-6. **Access the system**
-   - Open your browser and go to:  
-     👉 `http://127.0.0.1:8000`
+**Access at**: http://127.0.0.1:8000
 
 ---
 
