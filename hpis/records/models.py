@@ -12,17 +12,17 @@ class PatientRecord(models.Model):
         ('O', 'Other'),
     ]
 
-    full_name = models.CharField(max_length=255)
+    full_name = models.CharField(max_length=255, db_index=True)
     date_of_birth = models.DateField(null=True, blank=True)
     age = models.PositiveIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    department = models.CharField(max_length=50)
-    attending_physician = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    department = models.CharField(max_length=50, db_index=True)
+    attending_physician = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     photo = models.ImageField(upload_to='patient_photos/', null=True, blank=True)
 
-    patient_code = models.CharField(max_length=20, unique=True, editable=False)
+    patient_code = models.CharField(max_length=20, unique=True, editable=False, db_index=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def save(self, *args, **kwargs):
         # Auto-calculate age
@@ -46,6 +46,14 @@ class PatientRecord(models.Model):
 
     def __str__(self):
         return f"{self.patient_code} - {self.full_name}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['patient_code']),
+            models.Index(fields=['full_name']),
+            models.Index(fields=['attending_physician', '-created_at']),
+            models.Index(fields=['department', '-created_at']),
+        ]
 
 
 class VisitLog(models.Model):

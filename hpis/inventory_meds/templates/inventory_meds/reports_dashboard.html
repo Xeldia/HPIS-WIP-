@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; color: #333; }
+        
+        /* Header */
+        header {
+            background: #1c2f6c;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 22px; }
+        header nav a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        header nav a:hover { background: rgba(255,255,255,0.2); }
+        header nav a.active {
+            background: rgba(255,255,255,0.25);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1c2f6c;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card.warning .number { color: #ffc107; }
+        .stat-card.danger .number { color: #dc3545; }
+        .stat-card.success .number { color: #28a745; }
+        
+        .stat-card .subtitle {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .chart-card h3 {
+            font-size: 16px;
+            color: #1c2f6c;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Expiry List */
+        .expiry-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .expiry-section h3 {
+            font-size: 18px;
+            color: #1c2f6c;
+            margin-bottom: 20px;
+        }
+        
+        .expiry-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .expiry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #ddd;
+        }
+        
+        .expiry-item.expired {
+            background: #fff5f5;
+            border-left-color: #dc3545;
+        }
+        
+        .expiry-item.warning {
+            background: #fffbf0;
+            border-left-color: #ffc107;
+        }
+        
+        .expiry-item-info {
+            flex: 1;
+        }
+        
+        .expiry-item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .expiry-item-details {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .expiry-item-date {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 6px;
+            background: white;
+        }
+        
+        .expiry-item.expired .expiry-item-date {
+            color: #dc3545;
+            background: #fff0f0;
+        }
+        
+        .expiry-item.warning .expiry-item-date {
+            color: #f57c00;
+            background: #fff8e1;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #1c2f6c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📊 {{ title }}</h1>
+        <nav>
+            <a href="{% url 'dashboard_url' %}">Dashboard</a>
+            <a href="{% url 'analytics_dashboard' %}">Analytics</a>
+            <a href="{% url 'inventory_meds:dashboard' %}" class="active">💊 Medicine Inventory</a>
+            <a href="{% url 'settings' %}">Settings</a>
+            <a href="{% url 'profile' %}">Profile</a>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <a href="{% url 'inventory_meds:dashboard' %}" class="back-link">← Back to Inventory</a>
+        
+        <!-- Summary Statistics -->
+        <div class="summary-grid">
+            <div class="stat-card">
+                <h3>Total Medicines</h3>
+                <div class="number">{{ total_medicines }}</div>
+                <div class="subtitle">In inventory</div>
+            </div>
+            
+            <div class="stat-card success">
+                <h3>Active Stock</h3>
+                <div class="number">{{ active_medicines }}</div>
+                <div class="subtitle">Available items</div>
+            </div>
+            
+            <div class="stat-card warning">
+                <h3>Low Stock</h3>
+                <div class="number">{{ low_stock_count }}</div>
+                <div class="subtitle">Below reorder level</div>
+            </div>
+            
+            <div class="stat-card danger">
+                <h3>Expired</h3>
+                <div class="number">{{ expired_count }}</div>
+                <div class="subtitle">Need disposal</div>
+            </div>
+            
+            <div class="stat-card warning">
+                <h3>Expiring Soon</h3>
+                <div class="number">{{ expiring_soon_count }}</div>
+                <div class="subtitle">Within 30 days</div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📦 Stock Status Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="stockStatusChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>💊 Medicines by Category</h3>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>⏰ Expiry Status Overview</h3>
+                <div class="chart-container">
+                    <canvas id="expiryChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>📊 Stock Levels</h3>
+                <div class="chart-container">
+                    <canvas id="stockLevelsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Expiry Timeline -->
+        <div class="expiry-section">
+            <h3>🗓️ Expiry Timeline (Next 90 Days)</h3>
+            <div class="expiry-list">
+                {% for med in expiring_medicines %}
+                <div class="expiry-item {% if med.is_expired %}expired{% elif med.is_expiring_soon %}warning{% endif %}">
+                    <div class="expiry-item-info">
+                        <div class="expiry-item-name">{{ med.name }} ({{ med.strength }})</div>
+                        <div class="expiry-item-details">
+                            {{ med.brand_name|default:"Generic" }} | 
+                            Batch: {{ med.batch_number }} | 
+                            Qty: {{ med.quantity_on_hand }}
+                        </div>
+                    </div>
+                    <div class="expiry-item-date">
+                        {% if med.is_expired %}
+                            Expired: {{ med.expires_on }}
+                        {% else %}
+                            Expires: {{ med.expires_on }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    No medicines expiring in the next 90 days
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Stock Status Distribution (Doughnut)
+        const stockStatusCtx = document.getElementById('stockStatusChart').getContext('2d');
+        new Chart(stockStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Low Stock', 'Out of Stock', 'Expired'],
+                datasets: [{
+                    data: [
+                        {{ active_medicines }},
+                        {{ low_stock_count }},
+                        {{ out_of_stock_count }},
+                        {{ expired_count }}
+                    ],
+                    backgroundColor: ['#28a745', '#ffc107', '#6c757d', '#dc3545'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 15, font: { size: 12 } }
+                    }
+                }
+            }
+        });
+        
+        // Medicines by Category (Bar)
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ category_labels|safe }},
+                datasets: [{
+                    label: 'Number of Medicines',
+                    data: {{ category_counts|safe }},
+                    backgroundColor: '#1c2f6c',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+        
+        // Expiry Status (Pie)
+        const expiryCtx = document.getElementById('expiryChart').getContext('2d');
+        new Chart(expiryCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Valid (>90 days)', 'Expiring Soon (30-90 days)', 'Critical (<30 days)', 'Expired'],
+                datasets: [{
+                    data: [
+                        {{ valid_stock }},
+                        {{ expiring_soon_count }},
+                        {{ critical_expiry }},
+                        {{ expired_count }}
+                    ],
+                    backgroundColor: ['#28a745', '#ffc107', '#ff9800', '#dc3545'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 15, font: { size: 12 } }
+                    }
+                }
+            }
+        });
+        
+        // Stock Levels (Horizontal Bar)
+        const stockLevelsCtx = document.getElementById('stockLevelsChart').getContext('2d');
+        new Chart(stockLevelsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ top_medicines_names|safe }},
+                datasets: [
+                    {
+                        label: 'Current Stock',
+                        data: {{ top_medicines_stock|safe }},
+                        backgroundColor: '#1c2f6c'
+                    },
+                    {
+                        label: 'Reorder Level',
+                        data: {{ top_medicines_reorder|safe }},
+                        backgroundColor: '#ffc107'
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { font: { size: 12 } }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
